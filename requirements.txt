@@ -58,6 +58,7 @@ tzlocal==4.2
 urllib3==1.26.12
 validators==0.20.0
 webencodings==0.5.1
+zbar==0.10
 zbarlight==3.0
 zipp==3.10.0
 zope.interface==5.5.0
