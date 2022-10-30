@@ -37,18 +37,18 @@ if authentication_status == True:
     connection_string = "DefaultEndpointsProtocol=https;AccountName=anurak;AccountKey=NgAAeqBVEbEor+R3cyNihGnWmHDr6UEaO4" \
                         "+o26TTwJm2k/qx9pgHAgq3zGfa7a6EcOkVRyMiwlIE+AStiZxLEw==;EndpointSuffix=core.windows.net "
 
+
     st.title('Upload QR into Database')
     temp_file = st.file_uploader("1. Upload picture in PNG or JPEG format")
     if st.button("Save to Cache"):
-        with open(Path(__file__).parent/"data"/"temp_file", "wb") as file_handle:
+        with open(Path(__file__).parent/"data/temp_file", "wb") as file_handle:
             file_handle.write(temp_file.read())
 
-    file_path = Path(__file__).parent/"data"/"temp_file"
     try:
-        with open(file_path, 'rb') as image_file:
+        with open(Path(__file__).parent/"data/temp_file", 'rb') as image_file:
             image = Image.open(image_file)
             image.load()
-            os.remove(file_path)
+            os.remove(Path(__file__).parent/"data/temp_file")
             codes = zbarlight.scan_codes(['qrcode'], image)
 
         server = 'tcp:dcdbserverdev.database.windows.net,1433'
