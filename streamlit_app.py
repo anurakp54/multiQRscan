@@ -47,7 +47,7 @@ if authentication_status == True:
         with open(Path(__file__).parent/"data"/"temp_file", 'rb') as image_file:
             image = Image.open(image_file)
             image.load()
-            #os.remove(Path(__file__).parent/"data"/"temp_file")
+            os.remove(Path(__file__).parent/"data"/"temp_file")
             codes = zbarlight.scan_codes(['qrcode'], image)
 
         server = 'tcp:dcdbserverdev.database.windows.net,1433'
