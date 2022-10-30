@@ -32,7 +32,7 @@ if authentication_status == None:
 if authentication_status == True:
     authenticator.logout("Logout","sidebar")
 
-    #credential = st.secrets["anurak"]
+    credential = st.secrets["anurak"]
     connection_string = "DefaultEndpointsProtocol=https;AccountName=anurak;AccountKey=NgAAeqBVEbEor+R3cyNihGnWmHDr6UEaO4" \
                         "+o26TTwJm2k/qx9pgHAgq3zGfa7a6EcOkVRyMiwlIE+AStiZxLEw==;EndpointSuffix=core.windows.net "
 
@@ -53,7 +53,7 @@ if authentication_status == True:
         server = 'tcp:dcdbserverdev.database.windows.net,1433'
         _database = 'dccr_db'
         username = 'jakkrapan'
-        #password = st.secrets["dido"]
+        password = st.secrets["dido"]
 
         driver = '{ODBC Driver 17 for SQL Server}'
         err = []
