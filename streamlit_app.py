@@ -13,7 +13,10 @@ from datetime import datetime
 names = ["CKST", "admin"]
 usernames = ["CKST", "admin"]
 
+
 file_path = Path(__file__).parent/"hashed_pw.pkl"
+print(file_path)
+
 with file_path.open("rb") as file:
     hashed_passwords = pickle.load(file)
 
@@ -31,28 +34,28 @@ if authentication_status == True:
     authenticator.logout("Logout","sidebar")
 
     credential = st.secrets["anurak"]
-
     connection_string = "DefaultEndpointsProtocol=https;AccountName=anurak;AccountKey=NgAAeqBVEbEor+R3cyNihGnWmHDr6UEaO4" \
                         "+o26TTwJm2k/qx9pgHAgq3zGfa7a6EcOkVRyMiwlIE+AStiZxLEw==;EndpointSuffix=core.windows.net "
 
     st.title('Upload QR into Database')
     temp_file = st.file_uploader("1. Upload picture in PNG or JPEG format")
     if st.button("Save to Cache"):
-        with open("data/temp_file", "wb") as file_handle:
+        with open(Path(__file__).parent/"data"/"temp_file", "wb") as file_handle:
             file_handle.write(temp_file.read())
 
-    file_path = 'data/temp_file'
+    file_path = Path(__file__).parent/"data"/"temp_file"
     try:
         with open(file_path, 'rb') as image_file:
             image = Image.open(image_file)
             image.load()
-            os.remove('data/temp_file')
+            os.remove(file_path)
             codes = zbarlight.scan_codes(['qrcode'], image)
 
         server = 'tcp:dcdbserverdev.database.windows.net,1433'
         _database = 'dccr_db'
         username = 'jakkrapan'
         password = st.secrets["dido"]
+
         driver = '{ODBC Driver 17 for SQL Server}'
         err = []
         for code in codes:
