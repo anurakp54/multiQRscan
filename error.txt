@@ -1,2 +1,0 @@
-
-error is found on ['This http://127.0.0.1:5000/C2010001 can not be uploaded.']
