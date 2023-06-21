@@ -1,3 +1,2 @@
-python-dev
 libzbar0
 libber-dev
