@@ -1,3 +1,4 @@
 libzbar0
 libzbar-dev
 libgl1
+libber-dev
