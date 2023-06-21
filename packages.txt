@@ -1,2 +1,4 @@
 libzbar0
+libmagick++-dev
+libx11-dev
 libzbar-dev
