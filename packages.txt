@@ -1,5 +1,1 @@
 python3-zbar
-libzbar0
-libmagick++-dev
-libx11-dev
-libzbar-dev
