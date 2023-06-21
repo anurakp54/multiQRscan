@@ -8,15 +8,18 @@ import cv2
 import pyodbc as pyodbc
 from tqdm import tqdm
 from datetime import datetime
-# Error massage from frontend import *, ModuleNotFoundError: No module named "frontend"
+import zbarlight
+from PIL import Image
+
+# Error message from frontend import *, ModuleNotFoundError: No module named "frontend"
 # Solution: pip install PyMuPDF
 # then pip uninstall fitz
 
 server = 'tcp:dcdbserverdev.database.windows.net,1433'
 _database = 'dccr_db'
 username = 'jakkrapan'
-password = st.secrets["dido"]
-
+#password = st.secrets["dido"]
+password = 'Dido@Wox30428'
 driver = '{ODBC Driver 17 for SQL Server}'
 def read_qr_code(filename):
 
@@ -27,6 +30,15 @@ def read_qr_code(filename):
         return value
     except:
         return
+
+def read_qr_code2(filename):
+    with open(filename, 'rb') as image_file:
+        image = Image.open(image_file)
+        image.load()
+
+    value = zbarlight.scan_codes(['qrcode'], image)
+    #print('QR codes: %s' % codes)
+    return value
 
 def app():  # Main application for inserting QR Code
     section1 = st.container()
@@ -99,23 +111,44 @@ def app():  # Main application for inserting QR Code
             err = []
             if option =='Yes':
                 st.success('System is registering QR to server for GFC')
+
                 for each_path in os.listdir(workdir):
                     if ".pdf" in each_path:
-                        doc = fitz.Document((os.path.join(workdir, each_path)))
+                        # Open PDF file
+                        pdf_file = fitz.open(os.path.join(workdir, each_path))
 
-                        for i in tqdm(range(len(doc)), desc="pages"):
-                            for img in tqdm(doc.get_page_images(i), desc="page_images"):
-                                xref = img[0]
-                                image = doc.extract_image(xref)
-                                pix = fitz.Pixmap(doc, xref)
-                                # pix.save(os.path.join(workdir, "%s_p%s-%s.png" % (each_path[:-4], i, xref)))
-                                pix.save(os.path.join(workdir, "temp.png"))
-                                code = read_qr_code(os.path.join(workdir, 'temp.png'))
+                        # Calculate number of pages in PDF file
+                        page_nums = len(pdf_file)
+                        images_list = []
+                        for page_num in range(page_nums):
+                            page_content = pdf_file[page_num]
+                            images_list.extend(page_content.get_images())
+
+                        for i, image in enumerate(images_list, start=1):
+                            # Extract the image object number
+                            xref = image[0]
+                            # Extract image
+                            base_image = pdf_file.extract_image(xref)
+                            # Store image bytes
+                            image_bytes = base_image['image']
+                            # Store image extension
+                            image_ext = base_image['ext']
+                            # Generate image file name
+                            image_name = 'temp' + str(i) + '.' + image_ext
+                            # Save image
+                            with open(os.path.join(workdir, image_name), 'wb') as image_file:
+                                image_file.write(image_bytes)
+                                image_file.close()
+
+                            code = read_qr_code2(workdir + image_name)
+                            if code is not None:
+                                code = str(code[0], 'utf-8')
                                 dwgrev = code.split("/")[-1]
                                 rev = dwgrev[-2:]
                                 dwg = dwgrev[:-2]
-
+                                st.write(dwg + rev)
                                 if len(dwg) > 0:
+                                    st.write(dwg + rev + ' are uploading!')
                                     try:
                                         cnxn = pyodbc.connect(
                                             'DRIVER=' + driver + ';PORT=1433;SERVER=' + server + ';DATABASE=' + _database + '; UID=' + username + ';PWD=' + password + ';Encrypt=yes;TrustServerCertificate=no')
@@ -127,6 +160,7 @@ def app():  # Main application for inserting QR Code
                                         st.write(dwg + rev + ' are successfully uploaded!')
 
                                     except:
+                                        st.write(dwg + rev + ' are NOT successfully uploaded!')
                                         err.append(f'This {code} can not be uploaded.')
 
             shutil.make_archive('dwg_with_qr', 'zip', 'data/')
@@ -140,3 +174,15 @@ def app():  # Main application for inserting QR Code
 
         except: pass
 
+# delete the below line if upload to streamlit
+if __name__ == "__main__":
+
+    df = pd.read_excel('/Volumes/Extreme 500/PycharmProjects/QRMultiScan/data/DC3.xlsx')
+    file_handle = fitz.open('/Volumes/Extreme 500/PycharmProjects/QRMultiScan/data/pdf_dwg.pdf')
+    num_pages = file_handle.page_count
+
+    print(f"Total number of page: {num_pages}")
+    # iterating each page
+    for page in range(num_pages):
+        data = df.loc[page, 'Dwg']
+        print(data)

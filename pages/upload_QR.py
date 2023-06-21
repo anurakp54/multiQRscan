@@ -27,8 +27,8 @@ def app():
         server = 'tcp:dcdbserverdev.database.windows.net,1433'
         _database = 'dccr_db'
         username = 'jakkrapan'
-        password = st.secrets["dido"]
-
+        #password = st.secrets["dido"]
+        password = 'Dido@Wox30428'
 
         driver = '{ODBC Driver 17 for SQL Server}'
         err = []
