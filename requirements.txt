@@ -106,7 +106,6 @@ pyparsing==3.0.9
 pypdf==3.4.1
 PyPDF2==2.11.1
 pypng==0.20220715.0
-pyppeteer==1.0.2
 pyquery==1.4.3
 pyrsistent==0.18.1
 pyserial==3.5
