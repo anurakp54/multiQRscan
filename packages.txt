@@ -1,6 +1,7 @@
 libgl1
 libzbar0
 libzbar-dev
+libc6=2.31-0ubuntu9
 libsm6
 libxrender1
 libfontconfig1
