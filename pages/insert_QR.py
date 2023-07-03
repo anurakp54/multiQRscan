@@ -172,15 +172,3 @@ def app():  # Main application for inserting QR Code
 
         except: pass
 
-# delete the below line if upload to streamlit
-if __name__ == "__main__":
-
-    df = pd.read_excel('/Volumes/Extreme 500/PycharmProjects/QRMultiScan/data/DC3.xlsx')
-    file_handle = fitz.open('/Volumes/Extreme 500/PycharmProjects/QRMultiScan/data/pdf_dwg.pdf')
-    num_pages = file_handle.page_count
-
-    print(f"Total number of page: {num_pages}")
-    # iterating each page
-    for page in range(num_pages):
-        data = df.loc[page, 'Dwg']
-        print(data)
