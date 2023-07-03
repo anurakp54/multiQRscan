@@ -160,9 +160,6 @@ webencodings==0.5.1
 websockets==10.4
 wsproto==1.2.0
 xlrd==2.0.1
-yahoo-fin==0.8.9.1
-yahoofinancials==1.14
-yfinance==0.1.81
 zbarlight==3.0
 zipp==3.8.1
 zope.interface==5.5.0
