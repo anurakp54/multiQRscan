@@ -47,7 +47,6 @@ filelock==3.9.0
 flatbuffers==1.12
 fonttools==4.38.0
 fpdf==1.7.2
-frontend==0.0.3
 future==0.18.2
 gast==0.3.3
 gitdb==4.0.9
