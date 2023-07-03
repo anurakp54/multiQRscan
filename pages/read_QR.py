@@ -10,8 +10,7 @@ import streamlit as st
 server = 'tcp:dcdbserverdev.database.windows.net,1433'
 _database = 'dccr_db'
 username = 'jakkrapan'
-#password = st.secrets["dido"]
-password = 'Dido@Wox30428'
+password = st.secrets["dido"]
 driver = '{ODBC Driver 17 for SQL Server}'
 
 def read_qr_code(filename):

@@ -34,8 +34,7 @@ if authentication_status == True:
 
     authenticator.logout("Logout","sidebar")
 
-    #credential = st.secrets["anurak"]
-    credential = "T+zjkgmr3s0VbCcgO0QH092wVHkmAM4DEU58QglM3slyCokVfuTJALngugQdA+xm4HUaaPVwbblp+AStL1MlGg=="
+    credential = st.secrets["anurak"]
     connection_string = "DefaultEndpointsProtocol=https;AccountName=anurak;AccountKey=NgAAeqBVEbEor+R3cyNihGnWmHDr6UEaO4" \
                         "+o26TTwJm2k/qx9pgHAgq3zGfa7a6EcOkVRyMiwlIE+AStiZxLEw==;EndpointSuffix=core.windows.net "
 
