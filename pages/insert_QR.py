@@ -6,7 +6,6 @@ import shutil
 import os
 import cv2
 import pyodbc as pyodbc
-from tqdm import tqdm
 from datetime import datetime
 import zbarlight
 from PIL import Image
