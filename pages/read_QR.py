@@ -71,24 +71,26 @@ def app():
                         pix = fitz.Pixmap(doc, xref)
                         # pix.save(os.path.join(workdir, "%s_p%s-%s.png" % (each_path[:-4], i, xref)))
                         pix.save(os.path.join(workdir, "temp.png"))
+
                         code = read_qr_code2(os.path.join(workdir, 'temp.png'))
-                        code = str(code[0], 'utf-8')
-                        dwgrev = code.split("/")[-1]
-                        rev = dwgrev[-2:]
-                        dwg = dwgrev[:-2]
+                        if code is not None:
+                            code = str(code[0], 'utf-8')
+                            dwgrev = code.split("/")[-1]
+                            rev = dwgrev[-2:]
+                            dwg = dwgrev[:-2]
 
-                        if len(dwg) > 0:
-                            try:
-                                cnxn = pyodbc.connect(
-                                    'DRIVER=' + driver + ';PORT=1433;SERVER=' + server + ';DATABASE=' + _database + '; UID=' + username + ';PWD=' + password + ';Encrypt=yes;TrustServerCertificate=no')
-                                cursor = cnxn.cursor()
-                                cursor.execute("insert into documents(doc_num, revision, created) values (?,?,?)",
-                                               dwg, rev, datetime.now())
-                                cnxn.commit()
-                                st.write(dwg + rev + ' are successfully uploaded!')
+                            if len(dwg) > 0:
+                                try:
+                                    cnxn = pyodbc.connect(
+                                        'DRIVER=' + driver + ';PORT=1433;SERVER=' + server + ';DATABASE=' + _database + '; UID=' + username + ';PWD=' + password + ';Encrypt=yes;TrustServerCertificate=no')
+                                    cursor = cnxn.cursor()
+                                    cursor.execute("insert into documents(doc_num, revision, created) values (?,?,?)",
+                                                   dwg, rev, datetime.now())
+                                    cnxn.commit()
+                                    st.write(dwg + rev + ' are successfully uploaded!')
 
-                            except:
-                                err.append(f'This {code} can not be uploaded.')
+                                except:
+                                    err.append(f'This {code} can not be uploaded.')
 
         directory = 'data/'
         for f in os.listdir(directory):
