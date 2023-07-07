@@ -72,6 +72,7 @@ def app():
                         # pix.save(os.path.join(workdir, "%s_p%s-%s.png" % (each_path[:-4], i, xref)))
                         pix.save(os.path.join(workdir, "temp.png"))
                         code = read_qr_code2(os.path.join(workdir, 'temp.png'))
+                        code = str(code[0], 'utf-8')
                         dwgrev = code.split("/")[-1]
                         rev = dwgrev[-2:]
                         dwg = dwgrev[:-2]
