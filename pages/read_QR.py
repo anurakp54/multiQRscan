@@ -5,6 +5,8 @@ import cv2
 from datetime import datetime
 import pyodbc as pyodbc
 import streamlit as st
+from PIL import Image
+import zbarlight
 
 
 server = 'tcp:dcdbserverdev.database.windows.net,1433'
@@ -22,6 +24,15 @@ def read_qr_code(filename):
         return value
     except:
         return
+
+def read_qr_code2(filename):
+    with open(filename, 'rb') as image_file:
+        image = Image.open(image_file)
+        image.load()
+
+    value = zbarlight.scan_codes(['qrcode'], image)
+    #print('QR codes: %s' % codes)
+    return value
 
 def app():
     workdir = 'data/'
@@ -60,7 +71,7 @@ def app():
                         pix = fitz.Pixmap(doc, xref)
                         # pix.save(os.path.join(workdir, "%s_p%s-%s.png" % (each_path[:-4], i, xref)))
                         pix.save(os.path.join(workdir, "temp.png"))
-                        code = read_qr_code(os.path.join(workdir, 'temp.png'))
+                        code = read_qr_code2(os.path.join(workdir, 'temp.png'))
                         dwgrev = code.split("/")[-1]
                         rev = dwgrev[-2:]
                         dwg = dwgrev[:-2]
