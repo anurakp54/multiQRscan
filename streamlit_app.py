@@ -17,9 +17,25 @@ file_path = Path(__file__).parent/"hashed_pw.pkl"
 with file_path.open("rb") as file:
     hashed_passwords = pickle.load(file)
 
-authenticator = stauth.Authenticate(names, usernames, hashed_passwords,"Scanner", "ttyyuu", cookie_expiry_days=30)
+# Create credentials dictionary
+credentials = {
+    "usernames": {}
+}
 
-name, authentication_status, username = authenticator.login("login","sidebar")
+for i, username in enumerate(usernames):
+    credentials["usernames"][username] = {
+        "name": names[i],
+        "password": hashed_passwords[i]
+    }
+
+authenticator = stauth.Authenticate(
+    credentials,
+    "Scanner",
+    "ttyyuu",
+    cookie_expiry_days=30
+)
+
+name, authentication_status, username = authenticator.login("Login", "sidebar")
 
 if authentication_status == False:
     st.error("Username/Password is incorrect")

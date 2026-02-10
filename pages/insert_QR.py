@@ -7,7 +7,7 @@ import os
 import cv2
 import pyodbc as pyodbc
 from datetime import datetime
-import zbarlight
+from pyzbar.pyzbar import decode
 from PIL import Image
 
 # Error message from frontend import *, ModuleNotFoundError: No module named "frontend"
@@ -34,7 +34,8 @@ def read_qr_code2(filename):
         image = Image.open(image_file)
         image.load()
 
-    value = zbarlight.scan_codes(['qrcode'], image)
+    decoded_objects = decode(image)
+    value = [obj.data for obj in decoded_objects]
     #print('QR codes: %s' % codes)
     return value
 

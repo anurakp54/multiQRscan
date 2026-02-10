@@ -4,7 +4,7 @@ import streamlit_authenticator as stauth
 import pyodbc as pyodbc
 import streamlit as st
 from PIL import Image
-import zbarlight
+from pyzbar.pyzbar import decode
 import os
 from datetime import datetime
 
@@ -22,7 +22,8 @@ def app():
             image = Image.open(image_file)
             image.load()
             os.remove(Path(__file__).parent / "data" / "temp_file")
-            codes = zbarlight.scan_codes(['qrcode'], image)
+            decoded_objects = decode(image)
+            codes = [obj.data for obj in decoded_objects]
 
         server = 'tcp:dcdbserverdev.database.windows.net,1433'
         _database = 'dccr_db'
