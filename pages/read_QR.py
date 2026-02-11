@@ -47,7 +47,7 @@ def app():
     section1 = st.container()
     with section1:
         st.title('Upload PDF File for QR Reading and pushing to server')
-        xfiles = st.file_uploader("1. Upload Drawing File", accept_multiple_files=True)
+        xfiles = st.file_uploader("1. Upload Drawing File", accept_multiple_files=True,key="read_QR_page")
         if xfiles is not None:
             for file in xfiles:
                 filename, extension = file.name.split(".")
@@ -105,3 +105,6 @@ def app():
             else:
                 f.write('\n')
                 f.write('error is found on %s' % err)
+
+if __name__ == "__main__":
+    app()

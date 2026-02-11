@@ -54,7 +54,7 @@ def app():  # Main application for inserting QR Code
     with section1:
         try:
             st.title('Insert QR Code')
-            files = st.file_uploader("1. Upload Drawing File", accept_multiple_files=True)
+            files = st.file_uploader("1. Upload Drawing File", accept_multiple_files=True, key ="insert_QR_page")
             if files is not None:
                 for file in files:
                     filename, extension = file.name.split(".")
@@ -173,3 +173,5 @@ def app():  # Main application for inserting QR Code
 
         except: pass
 
+if __name__ == "__main__":
+    app()
