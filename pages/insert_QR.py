@@ -39,139 +39,122 @@ def read_qr_code2(filename):
     #print('QR codes: %s' % codes)
     return value
 
-def app():  # Main application for inserting QR Code
-    section1 = st.container()
 
-    with st.sidebar:
-        st.title('Choose your options')
-        option = st.selectbox(
-            'Do you want to upload the QR to server',
-            ('No', 'Yes'))
+def app():
+    st.title('Insert QR Code')
 
-        if option == 'Yes':
-            st.write('QR Code will be registered to the database')
+    workdir = 'data/'
+    err = []  # Initialized correctly now
 
-    with section1:
+    # 1. Clear old data at start of new run
+    if os.path.exists(workdir):
+        shutil.rmtree(workdir)
+    os.makedirs(workdir)
+
+    files = st.file_uploader("1. Upload Drawing File", accept_multiple_files=True, key="insert_QR_page")
+
+    pdf_path = None
+    df = None
+
+    if files:
+        for file in files:
+            ext = file.name.split(".")[-1].lower()
+            if ext == 'pdf':
+                pdf_path = os.path.join(workdir, 'pdf_dwg.pdf')
+                with open(pdf_path, 'wb') as f:
+                    f.write(file.getvalue())
+            elif ext in ['xlsx', 'xls']:
+                excel_path = os.path.join(workdir, file.name)
+                with open(excel_path, 'wb') as f:
+                    f.write(file.getvalue())
+                df = pd.read_excel(excel_path)
+
+    if pdf_path and df is not None:
         try:
-            st.title('Insert QR Code')
-            files = st.file_uploader("1. Upload Drawing File", accept_multiple_files=True, key ="insert_QR_page")
-            if files is not None:
-                for file in files:
-                    filename, extension = file.name.split(".")
-                    if extension == 'pdf':
-                        bytes_data = file.getvalue()
-                        with open('data/'+'pdf_dwg.pdf','wb') as f:
-                            f.write(bytes_data)
-                    else:
-                        bytes_data = file.getvalue()
-                        with open('data/' + file.name, 'wb') as f:
-                            f.write(bytes_data)
-                        df = pd.read_excel('data/'+file.name)
-
-            file_handle = fitz.open('data/pdf_dwg.pdf')
+            file_handle = fitz.open(pdf_path)
             num_pages = file_handle.page_count
 
-            #iterating each page
-            for page in range(num_pages):
-                data = df.loc[page,'Dwg']
-                st.write(data)
-                # Encoding data using make() function
-                img = qrcode.make('https://docvalidation.azurewebsites.net/goodforconstruction/' + data)
-                # Saving as an image file
-                img.save('temp_code.png')
+            # Setup Database Connection ONCE if needed
+            register_db = st.sidebar.checkbox("Register to Server?", value=False)
+            cnxn = None
+            if register_db:
+                # Use a single connection for the whole session
+                cnxn = pyodbc.connect(
+                    'DRIVER=' + driver + ';PORT=1433;SERVER=' + server + ';DATABASE=' + _database + '; UID=' + username + ';PWD=' + password + ';Encrypt=yes;TrustServerCertificate=no')
+                cursor = cnxn.cursor()
 
-                current_page = file_handle[page]
-                a, b, c, d = current_page.rect
-                #print(current_page.rotation)
-                #print(a, b, c, d)
+            with st.spinner('Processing drawings...'):
+                for page in range(num_pages):
+                    if page >= len(df):
+                        break
 
-                # image_rectangle = fitz.Rect(50,50,100,100)
-                if current_page.rotation == 270:
-                    image_rectangle = fitz.Rect(d - 70, c - 70, d - 30, c - 30)
+                    # --- DATA HANDLING ---
+                    # Use the data directly from Excel for the DB
+                    raw_data = str(df.iloc[page]['Dwg'])
+                    rev = raw_data[-2:]
+                    dwg = raw_data[:-2]
 
-                elif current_page.rotation == 0:
-                    image_rectangle = fitz.Rect(c - 70, 30, c - 30, 70)
+                    # --- QR INSERTION ---
+                    qr_url = f'https://docvalidation.azurewebsites.net/goodforconstruction/{raw_data}'
+                    img_qr = qrcode.make(qr_url)
+                    temp_qr = 'temp_qr.png'
+                    img_qr.save(temp_qr)
 
-                else:
-                    image_rectangle = fitz.Rect(d - 70, c - 70, d - 30, c - 30)
+                    current_page = file_handle[page]
+                    a, b, c, d = current_page.rect
 
-                img = open('temp_code.png', "rb").read()
-                img_xref = 0
-                # add the image
-                if not current_page.is_wrapped:
-                    current_page.wrap_contents()
-                current_page.insert_image(image_rectangle, stream=img, xref=img_xref)
-                new_pdf = fitz.open()
-                new_pdf.insert_pdf(file_handle, from_page=page, to_page=page)
-                new_pdf.save('data/'+ df.loc[page, 'Dwg'] + '.pdf')
+                    if current_page.rotation == 270:
+                        image_rectangle = fitz.Rect(d - 70, c - 70, d - 30, c - 30)
+                    elif current_page.rotation == 0:
+                        image_rectangle = fitz.Rect(c - 70, 30, c - 30, 70)
+                    else:
+                        image_rectangle = fitz.Rect(d - 70, c - 70, d - 30, c - 30)
 
-            os.remove('data/pdf_dwg.pdf')
-            workdir = 'data/'
-            err = []
-            if option =='Yes':
-                st.success('System is registering QR to server for GFC')
+                    current_page.insert_image(image_rectangle, filename=temp_qr)
 
-                for each_path in os.listdir(workdir):
-                    if ".pdf" in each_path:
-                        # Open PDF file
-                        pdf_file = fitz.open(os.path.join(workdir, each_path))
+                    # Save individual page
+                    out_pdf_name = os.path.join(workdir, f"{raw_data}.pdf")
+                    new_pdf = fitz.open()
+                    new_pdf.insert_pdf(file_handle, from_page=page, to_page=page)
+                    new_pdf.save(out_pdf_name)
+                    new_pdf.close()
 
-                        # Calculate number of pages in PDF file
-                        page_nums = len(pdf_file)
-                        images_list = []
-                        for page_num in range(page_nums):
-                            page_content = pdf_file[page_num]
-                            images_list.extend(page_content.get_images())
+                    # --- DATABASE UPLOAD (Happens here now!) ---
 
-                        for i, image in enumerate(images_list, start=1):
-                            # Extract the image object number
-                            xref = image[0]
-                            # Extract image
-                            base_image = pdf_file.extract_image(xref)
-                            # Store image bytes
-                            image_bytes = base_image['image']
-                            # Store image extension
-                            image_ext = base_image['ext']
-                            # Generate image file name
-                            image_name = 'temp' + str(i) + '.' + image_ext
-                            # Save image
-                            with open(os.path.join(workdir, image_name), 'wb') as image_file:
-                                image_file.write(image_bytes)
-                                image_file.close()
+                    if register_db and cnxn:
+                        try:
+                            cursor.execute(
+                                "INSERT INTO documents(doc_num, revision, created) VALUES (?,?,?)",
+                                dwg, rev, datetime.now())
+                            cnxn.commit()
+                            st.write(f"✅ {raw_data} Registered")
+                        except Exception as e:
+                            st.write(dwg + rev + ' are NOT successfully uploaded!')
+                            err.append(f"DB Error on {raw_data}: {str(e)}")
 
-                            code = read_qr_code2(workdir + image_name)
-                            if code is not None:
-                                code = str(code[0], 'utf-8')
-                                dwgrev = code.split("/")[-1]
-                                rev = dwgrev[-2:]
-                                dwg = dwgrev[:-2]
-                                st.write(dwg + rev)
-                                if len(dwg) > 0:
-                                    st.write(dwg + rev + ' are uploading!')
-                                    try:
-                                        cnxn = pyodbc.connect(
-                                            'DRIVER=' + driver + ';PORT=1433;SERVER=' + server + ';DATABASE=' + _database + '; UID=' + username + ';PWD=' + password + ';Encrypt=yes;TrustServerCertificate=no')
-                                        cursor = cnxn.cursor()
-                                        cursor.execute(
-                                            "insert into documents(doc_num, revision, created) values (?,?,?)",
-                                            dwg, rev, datetime.now())
-                                        cnxn.commit()
-                                        st.write(dwg + rev + ' are successfully uploaded!')
+            # Cleanup
+            file_handle.close()
+            if os.path.exists(pdf_path): os.remove(pdf_path)
+            if os.path.exists('temp_qr.png'): os.remove('temp_qr.png')
+            if cnxn: cnxn.close()
 
-                                    except:
-                                        st.write(dwg + rev + ' are NOT successfully uploaded!')
-                                        err.append(f'This {code} can not be uploaded.')
+            # --- ZIP AND DOWNLOAD ---
+            # Zip the contents of 'data/' into a file located in the root directory
+            zip_base_name = 'drawings_output'
+            shutil.make_archive(zip_base_name, 'zip', workdir)
 
-            shutil.make_archive('dwg_with_qr', 'zip', 'data/')
-            st.success("PDF file is being compressed, Click -Download Zip File-")
+            with open(f"{zip_base_name}.zip", 'rb') as z:
+                st.download_button("Download All PDFs", data=z, file_name="QR_Drawings.zip")
 
-            with open("dwg_with_qr.zip",'rb') as zipfile:
-                btn = st.download_button("Download Zip File", data=zipfile,file_name="drawing_with_QR.zip")
+            if err:
+                st.warning(f"Uploaded with {len(err)} database errors.")
+                with st.expander("Show Errors"):
+                    st.write(err)
 
-            for f in os.listdir(workdir):
-                os.remove(os.path.join(workdir,f))
+        except Exception as e:
+            st.error(f"Critical Error: {e}")
 
-        except: pass
 
+# Prevent auto-run on import
 if __name__ == "__main__":
     app()
